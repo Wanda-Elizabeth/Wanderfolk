@@ -1,6 +1,4 @@
 /* eslint-disable react/no-unescaped-entities */
-import { trackEvent } from '@/lib/analytics';
-
 export default function Footer() {
   return (
     <footer className="bg-primary-900 text-white py-12 border-t border-primary-800">

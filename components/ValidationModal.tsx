@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { trackEvent } from '@/lib/analytics';
 import SurveyForm from './SurveyForm';
 
 interface ValidationModalProps {
@@ -10,7 +8,6 @@ interface ValidationModalProps {
 }
 
 export default function ValidationModal({ onClose, initialStep }: ValidationModalProps) {
-  const [currentStep, setCurrentStep] = useState(initialStep);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
@@ -24,7 +21,7 @@ export default function ValidationModal({ onClose, initialStep }: ValidationModa
           ×
         </button>
 
-        {currentStep === 'survey' && (
+        {initialStep === 'survey' && (
           <SurveyForm onClose={onClose} />
         )}
       </div>
