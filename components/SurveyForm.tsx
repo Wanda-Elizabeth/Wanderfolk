@@ -222,7 +222,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
         {question.type === 'country' && (
           <div className="space-y-2">
             <select
-              value={responses.country || ''}
+              value={(responses.country as string) || ''}
               onChange={(e) => handleCountrySelect(e.target.value)}
               className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 text-slate-900"
             >
