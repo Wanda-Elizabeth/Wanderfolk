@@ -1,7 +1,9 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 
 import { useState } from 'react';
 import { trackEvent } from '@/lib/analytics';
+import { submitQuestionnaire, updateQuestionnaireEmail } from '@/app/actions/questionnaire';
 
 interface SurveyFormProps {
   onClose: () => void;
@@ -41,6 +43,11 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [responses, setResponses] = useState<Record<string, unknown>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [responseId, setResponseId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailSuccess, setEmailSuccess] = useState(false);
 
   const handleCountrySelect = (country: string) => {
     setResponses((prev) => ({ ...prev, country }));
@@ -84,22 +91,59 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError(null);
+
+    const result = await submitQuestionnaire({
+      country: responses.country as string,
+      interests: (responses.features as string[]) || [],
+      connectionPreference: responses.connectionType as string,
+      friendshipImportance: responses.friendshipImportance as number,
+      trustAnswer: responses.trustFeedback as string || '',
+    });
+
+    setLoading(false);
+
+    if (!result.success) {
+      setError(result.error || 'Failed to save questionnaire');
+      return;
+    }
+
+    setResponseId(result.id || null);
     trackEvent('survey_completed', {
       country: responses.country as string,
       features_count: Array.isArray(responses.features) ? (responses.features as string[]).length : 0,
       connection_type: responses.connectionType as string,
       friendship_importance: responses.friendshipImportance as number,
       has_trust_feedback: !!responses.trustFeedback,
-      wants_email: responses.wantsEmail as boolean,
     });
     setSubmitted(true);
   };
 
-  const handleEmailSignup = (email: string) => {
+  const handleEmailSignup = async (email: string) => {
+    if (!responseId) {
+      setEmailError('Unable to save email: No questionnaire response found');
+      return;
+    }
+
+    setEmailError(null);
+    setEmailSuccess(false);
+    setLoading(true);
+
+    const result = await updateQuestionnaireEmail(responseId, email);
+    setLoading(false);
+
+    if (!result.success) {
+      setEmailError(result.error || 'Failed to save email');
+      return;
+    }
+
     trackEvent('email_signup', { source: 'survey' });
-    // In a real application, this would submit to a backend service
-    console.log('Email signup:', email);
+    setEmailSuccess(true);
+    setTimeout(() => {
+      onClose();
+    }, 2000);
   };
 
   if (submitted) {
@@ -112,37 +156,52 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
           Your insights will help us understand whether this idea resonates with people like you.
         </p>
 
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        )}
+
         {/* Email signup */}
         <div className="bg-secondary-50 rounded-lg p-6 mb-6">
           <label className="block text-sm font-semibold text-primary-900 mb-4">
             Want to know when we launch?
           </label>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement)?.value;
-              if (email) {
-                handleEmailSignup(email);
-                alert("Thanks! We'll let you know when we launch.");
-                onClose();
-              }
-            }}
-            className="flex flex-col sm:flex-row gap-3"
-          >
-            <input
-              type="email"
-              name="email"
-              placeholder="your@email.com"
-              className="flex-1 px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 text-slate-900"
-              required
-            />
-            <button
-              type="submit"
-              className="px-6 py-2 bg-secondary-600 text-white font-semibold rounded-lg hover:bg-secondary-700 transition-colors whitespace-nowrap"
+          {emailSuccess ? (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <p className="text-green-700 font-semibold">✓ Email saved! We'll be in touch.</p>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement)?.value;
+                if (email) {
+                  handleEmailSignup(email);
+                }
+              }}
+              className="flex flex-col sm:flex-row gap-3"
             >
-              Notify me
-            </button>
-          </form>
+              <input
+                type="email"
+                name="email"
+                placeholder="your@email.com"
+                className="flex-1 px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 text-slate-900"
+                required
+                disabled={loading || emailSuccess}
+              />
+              <button
+                type="submit"
+                disabled={loading || emailSuccess}
+                className="px-6 py-2 bg-secondary-600 text-white font-semibold rounded-lg hover:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+              >
+                {loading ? 'Saving...' : 'Notify me'}
+              </button>
+            </form>
+          )}
+          {emailError && (
+            <p className="text-red-600 text-sm mt-3">{emailError}</p>
+          )}
           <p className="text-xs text-slate-500 mt-3">
             We respect your privacy. No spam, just launch updates.
           </p>
@@ -150,7 +209,8 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
 
         <button
           onClick={onClose}
-          className="px-6 py-2 border-2 border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+          disabled={loading}
+          className="px-6 py-2 border-2 border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 disabled:opacity-50 transition-colors"
         >
           Close
         </button>
@@ -213,6 +273,12 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
           />
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <p className="text-red-700 text-sm">{error}</p>
+        </div>
+      )}
 
       {/* Question */}
       <h3 className="text-2xl font-bold text-primary-900 mb-6">{question.title}</h3>
@@ -311,7 +377,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
       <div className="flex gap-4 justify-between">
         <button
           onClick={handlePreviousQuestion}
-          disabled={currentQuestion === 0}
+          disabled={currentQuestion === 0 || loading}
           className="px-6 py-2 border-2 border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Previous
@@ -320,6 +386,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
         <button
           onClick={handleNextQuestion}
           disabled={
+            loading ||
             (question.type === 'country' && !responses.country) ||
             (question.type === 'multiple-choice' &&
               (!Array.isArray(responses.features) || responses.features.length === 0)) ||
@@ -327,7 +394,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
           }
           className="px-6 py-2 bg-secondary-600 text-white font-semibold rounded-lg hover:bg-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {currentQuestion === questions.length - 1 ? 'Submit' : 'Next'}
+          {loading ? 'Saving...' : currentQuestion === questions.length - 1 ? 'Submit' : 'Next'}
         </button>
       </div>
     </div>
