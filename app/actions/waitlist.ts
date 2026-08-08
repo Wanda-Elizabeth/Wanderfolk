@@ -90,7 +90,6 @@ export async function submitSurveyResponse(
     questionType: string;
     answer: string;
   }>,
-  country: string,
   connectionPreferences: string[],
   countryInterests: string[]
 ): Promise<{ success: boolean; error?: string }> {
