@@ -123,7 +123,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
               const email = (e.currentTarget.elements.namedItem('email') as HTMLInputElement)?.value;
               if (email) {
                 handleEmailSignup(email);
-                alert('Thanks! We'll let you know when we launch.');
+                alert("Thanks! We'll let you know when we launch.");
                 onClose();
               }
             }}
@@ -133,7 +133,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
               type="email"
               name="email"
               placeholder="your@email.com"
-              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
+              className="flex-1 px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 text-slate-900"
               required
             />
             <button
@@ -198,6 +198,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
 
   const question = questions[currentQuestion];
 
+  // @ts-ignore
   return (
     <div className="p-8">
       {/* Progress */}
@@ -223,7 +224,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
             <select
               value={responses.country || ''}
               onChange={(e) => handleCountrySelect(e.target.value)}
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500"
+              className="w-full px-4 py-2 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 text-slate-900"
             >
               <option value="">Select your country...</option>
               {COUNTRIES.map((country) => (
@@ -243,7 +244,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
                   type="checkbox"
                   checked={((responses.features || []) as string[]).includes(option)}
                   onChange={() => handleCheckboxChange(option)}
-                  className="w-5 h-5 rounded border-slate-300 text-secondary-600"
+                  className="w-5 h-5 appearance-none rounded border-2 border-slate-300 bg-white cursor-pointer checked:bg-secondary-600 checked:border-secondary-600"
                 />
                 <span className="text-slate-700">{option}</span>
               </label>
@@ -261,7 +262,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
                   value={option}
                   checked={responses.connectionType === option}
                   onChange={() => handleConnectionSelect(option)}
-                  className="w-5 h-5"
+                  className="w-5 h-5 appearance-none border-2 border-slate-300 bg-white rounded-full cursor-pointer checked:bg-secondary-600 checked:border-secondary-600"
                 />
                 <span className="text-slate-700">{option}</span>
               </label>
@@ -301,7 +302,7 @@ export default function SurveyForm({ onClose }: SurveyFormProps) {
             value={(responses.trustFeedback || '') as string}
             onChange={(e) => setResponses((prev) => ({ ...prev, trustFeedback: e.target.value }))}
             placeholder="Tell us what would help you trust a platform like this..."
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 min-h-32 resize-none"
+            className="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500 min-h-32 resize-none text-slate-900"
           />
         )}
       </div>
