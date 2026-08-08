@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 export default function ExampleExperience() {
   return (
     <section className="py-20 sm:py-32 bg-white">

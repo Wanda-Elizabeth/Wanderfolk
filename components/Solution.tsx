@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 export default function Solution() {
   return (
     <section id="how-it-works" className="py-20 sm:py-32 bg-slate-50">

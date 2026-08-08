@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { trackEvent } from '@/lib/analytics';
 
 export default function Footer() {

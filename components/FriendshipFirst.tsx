@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 export default function FriendshipFirst() {
   const principles = [
     { title: 'Friendship over flirting', description: 'This is about genuine connection, not dating.' },
