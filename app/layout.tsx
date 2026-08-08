@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 export const metadata: Metadata = {
   title: 'Wanderfolk — Meet People. Not Dates.',
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta charSet="utf-8" />
         <link rel="icon" href="/favicon.ico" />
         <meta name="theme-color" content="#0f172a" />
+        <GoogleAnalytics />
       </head>
       <body>{children}</body>
     </html>

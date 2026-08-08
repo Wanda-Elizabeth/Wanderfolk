@@ -10,11 +10,10 @@ import FriendshipFirst from '@/components/FriendshipFirst';
 import CountryDiscovery from '@/components/CountryDiscovery';
 import ValidationCTA from '@/components/ValidationCTA';
 import Footer from '@/components/Footer';
-import { initGA, trackEvent } from '@/lib/analytics';
+import { trackEvent } from '@/lib/analytics';
 
 export default function Home() {
   useEffect(() => {
-    initGA();
     trackEvent('page_view');
   }, []);
 
